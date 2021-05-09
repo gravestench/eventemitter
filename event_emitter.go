@@ -200,7 +200,7 @@ func (ee *EventEmitter) getHandlerCount(event string) int {
 }
 
 // nolint:unused // not used by anything within the package
-func (ee *EventEmitter) removeAllListeners(events ...string) {
+func (ee *EventEmitter) RemoveAllListeners(events ...string) {
 	if events != nil {
 		if len(events) > 0 {
 			for idx := range events {
