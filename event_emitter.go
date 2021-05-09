@@ -1,5 +1,7 @@
 package eventemitter
 
+import "fmt"
+
 // NewEventEmitter initializes and returns an EventEmitter instance
 func NewEventEmitter() *EventEmitter {
 	ee := &EventEmitter{
@@ -15,7 +17,18 @@ type EventEmitter struct {
 	count     int
 }
 
-func (ee *EventEmitter) Emit(event string, args ...interface{}) {
+func (ee *EventEmitter) Emit(e interface{}, args ...interface{}) {
+	var event string
+
+	switch s := e.(type) {
+	case string:
+		event = s
+	case fmt.Stringer:
+		event = s.String()
+	default:
+		return
+	}
+
 	listeners := ee.listeners[event]
 
 	if listeners == nil {
@@ -33,19 +46,64 @@ func (ee *EventEmitter) Emit(event string, args ...interface{}) {
 	}
 }
 
-func (ee *EventEmitter) On(event string, fn func(...interface{})) {
+func (ee *EventEmitter) On(e interface{}, fn func(...interface{})) {
+	var event string
+
+	switch s := e.(type) {
+	case string:
+		event = s
+	case fmt.Stringer:
+		event = s.String()
+	default:
+		return
+	}
+
 	ee.addListener(event, fn, false)
 }
 
-func (ee *EventEmitter) Off(event string, fn func(...interface{})) {
+func (ee *EventEmitter) Off(e interface{}, fn func(...interface{})) {
+	var event string
+
+	switch s := e.(type) {
+	case string:
+		event = s
+	case fmt.Stringer:
+		event = s.String()
+	default:
+		return
+	}
+
 	ee.removeListener(event, fn)
 }
 
-func (ee *EventEmitter) Once(event string, fn func(...interface{})) {
+func (ee *EventEmitter) Once(e interface{}, fn func(...interface{})) {
+	var event string
+
+	switch s := e.(type) {
+	case string:
+		event = s
+	case fmt.Stringer:
+		event = s.String()
+	default:
+		return
+	}
+
 	ee.addListener(event, fn, true)
 }
 
-func (ee *EventEmitter) addListener(event string, fn func(...interface{}), once bool) *EventEmitter {
+func (ee *EventEmitter) addListener(e interface{}, fn func(...interface{}), once bool) *EventEmitter {
+	var event string
+
+	switch s := e.(type) {
+	case string:
+		event = s
+	case fmt.Stringer:
+		event = s.String()
+	default:
+		return ee
+	}
+
+
 	if fn == nil {
 		return ee
 	}
@@ -61,7 +119,18 @@ func (ee *EventEmitter) addListener(event string, fn func(...interface{}), once 
 	return ee
 }
 
-func (ee *EventEmitter) removeListener(event string, fn func(...interface{})) {
+func (ee *EventEmitter) removeListener(e interface{}, fn func(...interface{})) {
+	var event string
+
+	switch s := e.(type) {
+	case string:
+		event = s
+	case fmt.Stringer:
+		event = s.String()
+	default:
+		return
+	}
+
 	listeners := ee.listeners[event]
 
 	if listeners == nil {
