@@ -10,7 +10,7 @@ import (
 func Test_EventEmitter_On(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 
-	ee := NewEventEmitter()
+	ee := New()
 
 	eventX := "x only"
 	eventY := "y only"
@@ -66,7 +66,7 @@ func Test_EventEmitter_On(t *testing.T) {
 func Benchmark_EventEmitter(b *testing.B) {
 	rand.Seed(time.Now().UnixNano())
 
-	ee := NewEventEmitter()
+	ee := New()
 
 	e1 := "testing"
 

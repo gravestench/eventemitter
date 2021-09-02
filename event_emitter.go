@@ -2,8 +2,8 @@ package eventemitter
 
 import "fmt"
 
-// NewEventEmitter initializes and returns an EventEmitter instance
-func NewEventEmitter() *EventEmitter {
+// New initializes and returns an EventEmitter instance
+func New() *EventEmitter {
 	ee := &EventEmitter{
 		listeners: make(map[string][]*EventListener),
 		count:     0,
