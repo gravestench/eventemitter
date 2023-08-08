@@ -1,6 +1,9 @@
 package eventemitter
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 // New initializes and returns an EventEmitter instance
 func New() *EventEmitter {
@@ -15,9 +18,13 @@ func New() *EventEmitter {
 type EventEmitter struct {
 	listeners map[string][]*EventListener
 	count     int
+	mux       sync.Mutex
 }
 
 func (ee *EventEmitter) Emit(e interface{}, args ...interface{}) {
+	ee.mux.Lock()
+	defer ee.mux.Unlock()
+
 	var event string
 
 	switch s := e.(type) {
@@ -47,6 +54,9 @@ func (ee *EventEmitter) Emit(e interface{}, args ...interface{}) {
 }
 
 func (ee *EventEmitter) On(e interface{}, fn func(...interface{})) {
+	ee.mux.Lock()
+	defer ee.mux.Unlock()
+
 	var event string
 
 	switch s := e.(type) {
@@ -62,6 +72,9 @@ func (ee *EventEmitter) On(e interface{}, fn func(...interface{})) {
 }
 
 func (ee *EventEmitter) Off(e interface{}, fn func(...interface{})) {
+	ee.mux.Lock()
+	defer ee.mux.Unlock()
+
 	var event string
 
 	switch s := e.(type) {
@@ -77,6 +90,9 @@ func (ee *EventEmitter) Off(e interface{}, fn func(...interface{})) {
 }
 
 func (ee *EventEmitter) Once(e interface{}, fn func(...interface{})) {
+	ee.mux.Lock()
+	defer ee.mux.Unlock()
+	
 	var event string
 
 	switch s := e.(type) {
@@ -102,7 +118,6 @@ func (ee *EventEmitter) addListener(e interface{}, fn func(...interface{}), once
 	default:
 		return ee
 	}
-
 
 	if fn == nil {
 		return ee
