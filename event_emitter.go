@@ -22,9 +22,6 @@ type EventEmitter struct {
 }
 
 func (ee *EventEmitter) Emit(e interface{}, args ...interface{}) {
-	ee.mux.Lock()
-	defer ee.mux.Unlock()
-
 	var event string
 
 	switch s := e.(type) {
@@ -54,8 +51,6 @@ func (ee *EventEmitter) Emit(e interface{}, args ...interface{}) {
 }
 
 func (ee *EventEmitter) On(e interface{}, fn func(...interface{})) {
-	ee.mux.Lock()
-	defer ee.mux.Unlock()
 
 	var event string
 
@@ -72,8 +67,6 @@ func (ee *EventEmitter) On(e interface{}, fn func(...interface{})) {
 }
 
 func (ee *EventEmitter) Off(e interface{}, fn func(...interface{})) {
-	ee.mux.Lock()
-	defer ee.mux.Unlock()
 
 	var event string
 
@@ -90,9 +83,7 @@ func (ee *EventEmitter) Off(e interface{}, fn func(...interface{})) {
 }
 
 func (ee *EventEmitter) Once(e interface{}, fn func(...interface{})) {
-	ee.mux.Lock()
-	defer ee.mux.Unlock()
-	
+
 	var event string
 
 	switch s := e.(type) {
@@ -108,6 +99,9 @@ func (ee *EventEmitter) Once(e interface{}, fn func(...interface{})) {
 }
 
 func (ee *EventEmitter) addListener(e interface{}, fn func(...interface{}), once bool) *EventEmitter {
+	ee.mux.Lock()
+	defer ee.mux.Unlock()
+	
 	var event string
 
 	switch s := e.(type) {
@@ -135,6 +129,9 @@ func (ee *EventEmitter) addListener(e interface{}, fn func(...interface{}), once
 }
 
 func (ee *EventEmitter) removeListener(e interface{}, fn func(...interface{})) {
+	ee.mux.Lock()
+	defer ee.mux.Unlock()
+
 	var event string
 
 	switch s := e.(type) {
