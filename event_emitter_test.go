@@ -27,39 +27,42 @@ func Test_EventEmitter_On(t *testing.T) {
 	})
 
 	ee.On(eventBoth, func(args ...interface{}) {
-		ee.Emit(eventX)
-		ee.Emit(eventY)
+		ee.Emit(eventX).Wait()
+		ee.Emit(eventY).Wait()
 	})
 
-	ee.Emit(eventX)
+	// Emit eventX and wait for it to complete.
+	ee.Emit(eventX).Wait()
 
 	if x != 1 {
-		t.Error("listener function not called")
+		t.Errorf("unexpected value: %v != %v", x, 1)
 	}
 
 	if y != 0 {
-		t.Error("listener function incorrectly called")
+		t.Errorf("unexpected value: %v != %v", y, 0)
 	}
 
-	ee.Emit(eventY)
-	ee.Emit(eventY)
+	// Emit eventY twice and wait for them to complete.
+	ee.Emit(eventY).Wait()
+	ee.Emit(eventY).Wait()
 
 	if x != 1 {
-		t.Error("listener function incorrectly called")
+		t.Errorf("unexpected value: %v != %v", x, 1)
 	}
 
 	if y != 2 {
-		t.Error("listener function not called")
+		t.Errorf("unexpected value: %v != %v", y, 2)
 	}
 
-	ee.Emit(eventBoth)
+	// Emit eventBoth and wait for it to complete.
+	ee.Emit(eventBoth).Wait()
 
 	if x != 2 {
-		t.Error("listener function not called")
+		t.Errorf("unexpected value: %v != %v", x, 2)
 	}
 
 	if y != 3 {
-		t.Error("listener function not called")
+		t.Errorf("unexpected value: %v != %v", y, 3)
 	}
 }
 
@@ -78,12 +81,9 @@ func Benchmark_EventEmitter(b *testing.B) {
 		}
 
 		ee.Once(e1, fn)
-		wg.Add(1)
 	}
 
-	ee.Emit(e1, wg)
-
-	wg.Wait()
+	ee.Emit(e1, wg).Wait()
 
 	if len(ee.listeners) > 0 {
 		b.Error("listener count should be 0")
