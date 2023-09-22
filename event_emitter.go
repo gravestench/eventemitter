@@ -31,8 +31,9 @@ func (e *EventEmitter) Emit(event string, args ...any) *sync.WaitGroup {
 	funcs := make([]func(args ...any), 0)
 	for _, listener := range listeners {
 		wg.Add(1)
+		l := listener // keep in scope
 		funcs = append(funcs, func(args ...any) {
-			listener(args...)
+			l(args...)
 			wg.Done()
 		})
 	}
@@ -42,7 +43,7 @@ func (e *EventEmitter) Emit(event string, args ...any) *sync.WaitGroup {
 	onceFuncs := make([]func(args ...any), 0)
 	for _, listener := range onceListeners {
 		wg.Add(1)
-		l := listener
+		l := listener // keep in scope
 		onceFuncs = append(onceFuncs, func(args ...any) {
 			l(args...)
 			wg.Done()
