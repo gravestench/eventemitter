@@ -2,6 +2,7 @@ package eventemitter
 
 import (
 	"sync"
+	"unsafe"
 )
 
 // EventEmitter is a struct that implements the IEventEmitter interface.
@@ -41,8 +42,9 @@ func (e *EventEmitter) Emit(event string, args ...any) *sync.WaitGroup {
 	onceFuncs := make([]func(args ...any), 0)
 	for _, listener := range onceListeners {
 		wg.Add(1)
+		l := listener
 		onceFuncs = append(onceFuncs, func(args ...any) {
-			listener(args...)
+			l(args...)
 			wg.Done()
 		})
 	}
@@ -69,11 +71,24 @@ func (e *EventEmitter) On(event string, fn func(...any)) {
 }
 
 // Off removes a specific listener for a specific event.
-func (e *EventEmitter) Off(event string) {
+func (e *EventEmitter) Off(event string, fn func(...any)) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	delete(e.listeners, event)
+	pointerOf := func(fn func(...any)) uintptr {
+		return *(*uintptr)(unsafe.Pointer(&fn))
+	}
+
+	for idx, listener := range e.listeners[event] {
+		if pointerOf(listener) == pointerOf(fn) {
+			e.listeners[event] = append(e.listeners[event][:idx], e.listeners[event][idx+1:]...)
+			break
+		}
+	}
+
+	if len(e.listeners[event]) == 0 {
+		delete(e.listeners, event)
+	}
 }
 
 // Once registers a one-time listener for a specific event.

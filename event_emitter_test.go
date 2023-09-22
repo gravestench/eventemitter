@@ -2,7 +2,6 @@ package eventemitter
 
 import (
 	"math/rand"
-	"sync"
 	"testing"
 	"time"
 )
@@ -14,19 +13,74 @@ func Test_EventEmitter_On(t *testing.T) {
 
 	eventX := "x only"
 	eventY := "y only"
+
+	ee.On(eventX, func(args ...any) {})
+	if len(ee.listeners) != 1 {
+		t.Errorf("unexpected listener count")
+	}
+
+	ee.On(eventY, func(args ...any) {})
+
+	if len(ee.listeners) != 2 {
+		t.Errorf("unexpected listener count")
+	}
+}
+
+func Test_EventEmitter_Off(t *testing.T) {
+	ee := New()
+
+	eventX := "x"
+	eventY := "y"
+
+	handler := func(...any) {}
+
+	ee.On(eventX, handler)
+	ee.On(eventY, handler)
+
+	if len(ee.listeners) != 2 {
+		t.Errorf("unexpected listener count")
+	}
+
+	ee.Off(eventX, handler)
+
+	if len(ee.listeners[eventX]) != 0 {
+		t.Errorf("unexpected listener count")
+	}
+
+	if len(ee.listeners) != 1 {
+		t.Errorf("unexpected listener count")
+	}
+
+	ee.Off(eventY, handler)
+	if len(ee.listeners[eventY]) != 0 {
+		t.Errorf("unexpected listener count")
+	}
+
+	if len(ee.listeners) != 0 {
+		t.Errorf("unexpected listener count")
+	}
+}
+
+func Test_EventEmitter_Emit(t *testing.T) {
+	rand.Seed(time.Now().UnixNano())
+
+	ee := New()
+
+	eventX := "x only"
+	eventY := "y only"
 	eventBoth := "both"
 
 	var x, y int
 
-	ee.On(eventX, func(args ...interface{}) {
+	ee.On(eventX, func(args ...any) {
 		x++
 	})
 
-	ee.On(eventY, func(args ...interface{}) {
+	ee.On(eventY, func(args ...any) {
 		y++
 	})
 
-	ee.On(eventBoth, func(args ...interface{}) {
+	ee.On(eventBoth, func(args ...any) {
 		ee.Emit(eventX).Wait()
 		ee.Emit(eventY).Wait()
 	})
@@ -73,17 +127,11 @@ func Benchmark_EventEmitter(b *testing.B) {
 
 	e1 := "testing"
 
-	wg := &sync.WaitGroup{}
-
 	for idx := 0; idx < b.N; idx++ {
-		fn := func(args ...interface{}) {
-			args[0].(*sync.WaitGroup).Done()
-		}
-
-		ee.Once(e1, fn)
+		ee.Once(e1, func(...any) {})
 	}
 
-	ee.Emit(e1, wg).Wait()
+	ee.Emit(e1).Wait()
 
 	if len(ee.listeners) > 0 {
 		b.Error("listener count should be 0")
